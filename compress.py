@@ -25,6 +25,14 @@ def compress_command(in_file: str, out_file: str,  crf: int) -> str:
     return f"ffmpeg -i \"{in_file}\" -vcodec libx264 -crf {crf} \"{out_file}\""
 
 
+def compress(file: Path, save_file_path: Path, crf: int):
+    completed_process = subprocess.run(compress_command(
+        file, save_file_path, crf), capture_output=True)
+
+    if completed_process.returncode:
+        raise Exception(f"{file} failed to compress")
+
+
 def _get_save_file_function(_base_path: Path, _save_path: Path) -> Callable[[Path], Path]:
     def _function(file: Path) -> Path:
         return _save_path.joinpath(file.relative_to(_base_path))
@@ -72,7 +80,7 @@ glob_len = len(glob)
 for file in glob[index:]:
     print(f"{index+1} of {glob_len}")
 
-    subprocess.run(compress_command(file, get_save_file_path(file), crf))
+    compress(file, get_save_file_path(file), crf)
 
     index += 1
     update_index(index_file_path, index)
