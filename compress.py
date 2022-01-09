@@ -27,7 +27,7 @@ def compress_command(in_file: str, out_file: str,  crf: int) -> str:
 
 def compress(file: Path, save_file_path: Path, crf: int):
     completed_process = subprocess.run(compress_command(
-        file, save_file_path, crf), capture_output=True)
+        file, save_file_path, crf))
 
     if completed_process.returncode:
         raise Exception(f"{file} failed to compress")
