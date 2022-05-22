@@ -65,6 +65,7 @@ get_save_file_path = _get_save_file_function(base_dir, save_dir)
 
 files = base_dir.rglob("*")
 
+# generate folder structure
 for file in files:
     directory = get_save_file_path(file).parent
 
@@ -73,6 +74,7 @@ for file in files:
 
 index_file_path = base_dir.parent.joinpath("index")
 index = get_index(index_file_path)
+on_index_file = True
 
 glob = list(base_dir.rglob("*.mp4"))
 glob_len = len(glob)
@@ -83,8 +85,9 @@ for file in glob[index:]:
 
     save_file = get_save_file_path(file)
 
-    if not save_file.exists():
+    if not save_file.exists() or on_index_file:
         compress(file, save_file, crf)
+        on_index_file = False
 
     index += 1
     update_index(index_file_path, index)
