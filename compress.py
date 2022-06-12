@@ -1,3 +1,15 @@
+"""compress-ffmpeg
+
+The script allows to compress video directories. Its mainly meant for compressing
+courses that have a large number of lectures divided among many sub directories.
+
+The script only works with absolute paths. (Relative paths only work when the script
+file is in the same directory as the folder to be compressed)
+
+Requirements:
+- ffmpeg binaries (https://www.ffmpeg.org/download.html)
+"""
+
 from pathlib import Path
 from subprocess import run
 import argparse
@@ -6,6 +18,13 @@ from typing import Callable
 
 
 def get_index(index_path: Path) -> int:
+    """
+    Retrieves and returns the index of current file form the index file.
+    If the index file is not present the function makes it and returns 0.
+
+    :param index_path: path to the index file
+    :returns: current file index
+    """
     try:
         with open(index_path, "r", encoding="utf-8") as f:
             return int(f.read())
@@ -16,15 +35,36 @@ def get_index(index_path: Path) -> int:
 
 
 def update_index(index_path: Path, val: int):
+    """
+    Updates index file with the passed value
+
+    :param index_path: path to index file
+    :param val: value to save in the index file
+    """
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(str(val))
 
 
 def compress_command(in_file: str, out_file: str,  crf: int) -> str:
+    """
+    Returns ffmepg compression command based on the passed in arguments
+
+    :param in_file: path to input file
+    :param out_file: path to output file
+    :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
+    :returns: compression command
+    """
     return f"ffmpeg -i \"{in_file}\" -vcodec libx264 -crf {crf} \"{out_file}\""
 
 
 def compress(file: Path, save_file_path: Path, crf: int):
+    """
+    Compresses the input file using ffmpeg binaries and subprocess module
+
+    :param file: file to compress
+    :param save_file_path: output file path
+    :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
+    """
     completed_process = run(
         compress_command(str(file), str(save_file_path), crf),
         check=False
@@ -35,6 +75,15 @@ def compress(file: Path, save_file_path: Path, crf: int):
 
 
 def _get_save_file_function(_base_path: Path, _save_path: Path) -> Callable[[Path], Path]:
+    """
+    Returns function that returns the output file path based on the save file directory
+    and the original directory. The function ensures that the file structure of the 
+    original directory and the compressed directory is the same.
+
+    :param _base_path: file path of the base directory
+    :param _save_path: file path of the save directory
+    :returns: function to get the path of output file
+    """
     def _function(file: Path) -> Path:
         return _save_path.joinpath(file.relative_to(_base_path))
 
