@@ -1,4 +1,6 @@
-# Compress directories with FFMPEG
+# Compress-FFMPEG
+
+Compress video directories with ffmpeg
 
 ## Installation
 
