@@ -54,7 +54,7 @@ def compress_command(in_file: str, out_file: str,  crf: int) -> str:
     :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
     :returns: compression command
     """
-    return f"ffmpeg -i \"{in_file}\" -vcodec libx264 -crf {crf} \"{out_file}\""
+    return f"ffmpeg -y -i \"{in_file}\" -vcodec libx264 -crf {crf} \"{out_file}\""
 
 
 def compress(file: Path, save_file_path: Path, crf: int):
