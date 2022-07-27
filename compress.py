@@ -45,7 +45,7 @@ def update_index(index_path: Path, val: int):
         f.write(str(val))
 
 
-def compress_command(in_file: str, out_file: str,  crf: int) -> str:
+def compress_command(in_file: str, out_file: str,  crf: int, scaling: int, overwrite: bool) -> str:
     """
     Returns ffmepg compression command based on the passed in arguments
 
@@ -54,10 +54,13 @@ def compress_command(in_file: str, out_file: str,  crf: int) -> str:
     :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
     :returns: compression command
     """
-    return f"ffmpeg -y -i \"{in_file}\" -vcodec libx264 -crf {crf} \"{out_file}\""
+    scaling_filter = f"-vf scale=-1:{scaling}"
+    overwrite_option = "-y" if overwrite else ""
+
+    return f"ffmpeg {overwrite_option} -i \"{in_file}\" {scaling_filter} -vcodec libx264 -crf {crf} \"{out_file}\""
 
 
-def compress(file: Path, save_file_path: Path, crf: int):
+def compress(file: Path, save_file_path: Path, crf: int, scaling: int, overwrite: bool):
     """
     Compresses the input file using ffmpeg binaries and subprocess module
 
@@ -66,7 +69,8 @@ def compress(file: Path, save_file_path: Path, crf: int):
     :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
     """
     completed_process = run(
-        compress_command(str(file), str(save_file_path), crf),
+        compress_command(str(file), str(save_file_path),
+                         crf, scaling, overwrite),
         check=False
     )
 
@@ -93,13 +97,19 @@ def _get_save_file_function(_base_path: Path, _save_path: Path) -> Callable[[Pat
 parser = argparse.ArgumentParser(description="Compress video directory")
 parser.add_argument("dir", type=Path, help="directory to compress")
 parser.add_argument("-c", "--crf", type=int, default=24,
-                    help="ffmpeg crf argument")
+                    help="ffmpeg crf argument (default: %(default)s)")
+parser.add_argument("-s", "--scale", type=int, default=0,
+                    help="height for scaling resolution")
+parser.add_argument("-y", "--yes", action="store_true",
+                    help="ffmpeg overwrite files")
 parser.add_argument("-i", "--include", nargs="*", default=[], type=str,
-                    help="files to copy into the compressed directory")
+                    help="files to copy into the compressed directory (example: *.html *.pdf)")
 parsed_args = parser.parse_args()
 
 base_dir = parsed_args.dir
 crf = parsed_args.crf
+scaling = parsed_args.scale
+overwrite = parsed_args.yes
 other_files = parsed_args.include
 
 ###################################################
@@ -135,7 +145,7 @@ for file in glob[index:]:
     save_file = get_save_file_path(file)
 
     if not save_file.exists() or on_index_file:
-        compress(file, save_file, crf)
+        compress(file, save_file, crf, scaling, overwrite)
         on_index_file = False
 
     index += 1
@@ -152,3 +162,6 @@ for extension in other_files:
         if not save_file.exists():
             print(f"Copying {file}")
             copyfile(file, get_save_file_path(file))
+
+# TODO: Remove overwrite from argparse and overwrite automatically on index
+# TODO: Rename glob variables
