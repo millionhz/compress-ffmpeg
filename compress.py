@@ -70,9 +70,7 @@ def compress(file: Path, save_file_path: Path, crf: int, scaling: int, overwrite
     """
     completed_process = run(
         compress_command(str(file), str(save_file_path),
-                         crf, scaling, overwrite),
-        check=False
-    )
+                         crf, scaling, overwrite), check=False)
 
     if completed_process.returncode:
         raise Exception(f"{file} failed to compress")
@@ -100,8 +98,6 @@ parser.add_argument("-c", "--crf", type=int, default=24,
                     help="ffmpeg crf argument (default: %(default)s)")
 parser.add_argument("-s", "--scale", type=int, default=0,
                     help="height for scaling resolution")
-parser.add_argument("-y", "--yes", action="store_true",
-                    help="ffmpeg overwrite files")
 parser.add_argument("-i", "--include", nargs="*", default=[], type=str,
                     help="files to copy into the compressed directory (example: *.html *.pdf)")
 parsed_args = parser.parse_args()
@@ -109,7 +105,6 @@ parsed_args = parser.parse_args()
 base_dir = parsed_args.dir
 crf = parsed_args.crf
 scaling = parsed_args.scale
-overwrite = parsed_args.yes
 other_files = parsed_args.include
 
 ###################################################
@@ -122,10 +117,10 @@ save_dir.mkdir(exist_ok=True)
 
 get_save_file_path = _get_save_file_function(base_dir, save_dir)
 
-files = base_dir.rglob("*")
+all_files = base_dir.rglob("*")
 
 # generate folder structure
-for file in files:
+for file in all_files:
     directory = get_save_file_path(file).parent
 
     if not directory.exists():
@@ -135,17 +130,17 @@ index_file_path = base_dir.parent.joinpath("index")
 index = get_index(index_file_path)
 on_index_file = True
 
-glob = list(base_dir.rglob("*.mp4"))
-glob_len = len(glob)
+videos = list(base_dir.rglob("*.mp4"))
+total_videos = len(videos)
 
 
-for file in glob[index:]:
-    print(f"{index+1} of {glob_len}")
+for file in videos[index:]:
+    print(f"{index+1} of {total_videos}")
 
     save_file = get_save_file_path(file)
 
     if not save_file.exists() or on_index_file:
-        compress(file, save_file, crf, scaling, overwrite)
+        compress(file, save_file, crf, scaling, on_index_file)
         on_index_file = False
 
     index += 1
@@ -154,14 +149,11 @@ for file in glob[index:]:
 index_file_path.unlink()
 
 for extension in other_files:
-    files = base_dir.rglob(extension)
+    all_files = base_dir.rglob(extension)
 
-    for file in files:
+    for file in all_files:
         save_file = get_save_file_path(file)
 
         if not save_file.exists():
             print(f"Copying {file}")
             copyfile(file, get_save_file_path(file))
-
-# TODO: Remove overwrite from argparse and overwrite automatically on index
-# TODO: Rename glob variables
