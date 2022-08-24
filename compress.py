@@ -132,7 +132,6 @@ for file in all_files:
 
 index_file_path = base_dir.parent.joinpath("index")
 index = get_index(index_file_path)
-on_index_file = True
 
 videos = list(base_dir.rglob("*.mp4"))
 total_videos = len(videos)
@@ -141,11 +140,8 @@ total_videos = len(videos)
 for file in videos[index:]:
     print(f"{index+1} of {total_videos}")
 
-    save_file = get_save_file_path(file)
-
-    if not save_file.exists() or on_index_file:
-        compress(file, save_file, crf, scaling, on_index_file)
-        on_index_file = False
+    out_file = get_save_file_path(file)
+    compress(file, out_file, crf, scaling, True)
 
     index += 1
     update_index(index_file_path, index)
@@ -156,8 +152,8 @@ for extension in other_files:
     all_files = base_dir.rglob(extension)
 
     for file in all_files:
-        save_file = get_save_file_path(file)
+        out_file = get_save_file_path(file)
 
-        if not save_file.exists():
+        if not out_file.exists():
             print(f"Copying {file}")
             copyfile(file, get_save_file_path(file))
