@@ -52,9 +52,11 @@ def compress_command(in_file: str, out_file: str,  crf: int, scaling: int, overw
     :param in_file: path to input file
     :param out_file: path to output file
     :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
+    :param scaling: height for scaling resolution
+    :param overwrite: bool to enable overwriting
     :returns: compression command
     """
-    scaling_filter = f"-vf scale=-1:{scaling}"
+    scaling_filter = f"-vf scale=-1:{scaling}" if scaling else ""
     overwrite_option = "-y" if overwrite else ""
 
     return f"ffmpeg {overwrite_option} -i \"{in_file}\" {scaling_filter} -vcodec libx264 -crf {crf} \"{out_file}\""
@@ -67,6 +69,8 @@ def compress(file: Path, save_file_path: Path, crf: int, scaling: int, overwrite
     :param file: file to compress
     :param save_file_path: output file path
     :param crf: compression value (https://ffmpeg.org/ffmpeg-codecs.html#libx264_002c-libx264rgb)
+    :param scaling: height for scaling resolution
+    :param overwrite: bool to enable overwriting
     """
     completed_process = run(
         compress_command(str(file), str(save_file_path),
@@ -79,7 +83,7 @@ def compress(file: Path, save_file_path: Path, crf: int, scaling: int, overwrite
 def _get_save_file_function(_base_path: Path, _save_path: Path) -> Callable[[Path], Path]:
     """
     Returns function that returns the output file path based on the save file directory
-    and the original directory. The function ensures that the file structure of the 
+    and the original directory. The function ensures that the file structure of the
     original directory and the compressed directory is the same.
 
     :param _base_path: file path of the base directory

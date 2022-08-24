@@ -10,7 +10,7 @@ Compress video directories with ffmpeg
 ## Usage
 
 ```shell
-usage: compress.py [-h] [-c CRF] [-i [INCLUDE ...]] dir
+usage: compress.py [-h] [-c CRF] [-s SCALE] [-i [INCLUDE ...]] dir
 
 Compress video directory
 
@@ -19,13 +19,15 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -c CRF, --crf CRF     ffmpeg crf argument
+  -c CRF, --crf CRF     ffmpeg crf argument (default: 24)
+  -s SCALE, --scale SCALE
+                        height for scaling resolution
   -i [INCLUDE ...], --include [INCLUDE ...]
-                        files to copy into the compressed directory
+                        files to copy into the compressed directory (example: *.html *.pdf)
 ```
 
 ## Example
 
 ```shell
- python .\compress.py ".\Videos" --crf 24
+ python .\compress.py ".\Videos" --crf 24 -s 720
 ```
