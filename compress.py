@@ -59,7 +59,10 @@ def compress_command(in_file: str, out_file: str,  crf: int, scaling: int, overw
     scaling_filter = f"-vf scale=-1:{scaling}" if scaling else ""
     overwrite_option = "-y" if overwrite else ""
 
-    return f"ffmpeg {overwrite_option} -i \"{in_file}\" {scaling_filter} -vcodec libx264 -crf {crf} \"{out_file}\""
+    command = ["ffmpeg", overwrite_option, "-i", in_file,
+               scaling_filter, "-vcodec", "libx264", "-crf", crf, out_file]
+
+    return list(map(str, filter(bool, command)))
 
 
 def compress(file: Path, save_file_path: Path, crf: int, scaling: int, overwrite: bool):
@@ -135,7 +138,6 @@ index = get_index(index_file_path)
 
 videos = list(base_dir.rglob("*.mp4"))
 total_videos = len(videos)
-
 
 for file in videos[index:]:
     print(f"{index+1} of {total_videos}")
